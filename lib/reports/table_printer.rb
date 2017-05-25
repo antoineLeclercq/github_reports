@@ -5,7 +5,7 @@ require 'reports/number_humanizer'
 module Reports
 
   # TablePrinter prints a hash of keys and values in a nicely formatted table.
-  # The rows are sorted by value from larges to smallest. A blank line and then
+  # The rows are sorted by value from largest to smallest. A blank line and then
   # a total line are printed beneath the table.
   class TablePrinter
     include NumberHumanizer

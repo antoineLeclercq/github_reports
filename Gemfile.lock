@@ -82,3 +82,9 @@ DEPENDENCIES
   thor
   vcr
   webmock
+
+RUBY VERSION
+   ruby 2.2.7p470
+
+BUNDLED WITH
+   1.15.0
