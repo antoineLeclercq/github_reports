@@ -5,6 +5,9 @@ require 'thor'
 require 'reports/github_api_client'
 require 'reports/table_printer'
 
+require 'dotenv'
+Dotenv.load
+
 module Reports
 
   class CLI < Thor
@@ -20,18 +23,19 @@ module Reports
     def user_info(username)
       puts "Getting info for #{username}"
 
-      client = Reports::GitHubAPIClient.new
       user = client.user_info(username)
 
       puts "name: #{user.name}"
       puts "location: #{user.location}"
       puts "public repos: #{user.public_repos_count}"
+    rescue Error => error
+      puts "ERROR: #{error.message}"
     end
 
     private
 
     def client
-      @client ||= GitHubAPIClient.new
+      @client ||= Reports::GitHubAPIClient.new(ENV['GITHUB_TOKEN'])
     end
 
   end
