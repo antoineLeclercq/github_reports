@@ -32,12 +32,22 @@ module Reports
       puts "ERROR: #{error.message}"
     end
 
+    desc 'repositories USERNAME', 'Get repositories information for a user'
+    def repositories(username)
+      puts "Fetching repositories for #{username}"
+
+      repositories = client.public_repos_for_user(username)
+
+      puts "#{username} has #{repositories.size} public repos.\n\n"
+      repositories.each { |repo| puts "#{repo.name} - #{repo.url}" }
+    rescue Error => error
+      puts "ERROR: #{error.message}"
+    end
+
     private
 
     def client
       @client ||= Reports::GitHubAPIClient.new(ENV['GITHUB_TOKEN'])
     end
-
   end
-
 end
