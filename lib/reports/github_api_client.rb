@@ -3,6 +3,7 @@ require_relative 'middleware/authentication'
 require_relative 'middleware/logging'
 require_relative 'middleware/status_check'
 require_relative 'middleware/json_parsing'
+require_relative 'middleware/cache'
 
 module Reports
   class Error < StandardError; end
@@ -48,6 +49,7 @@ module Reports
         builder.use Middleware::StatusCheck
         builder.use Middleware::JSONParsing
         builder.use Middleware::Logging
+        builder.use Middleware::Cache
         builder.adapter Faraday.default_adapter
       end
     end
