@@ -12,7 +12,7 @@ gem "redis"
 gem "faraday"
 
 group :development, :test do
-  gem "byebug"
+  gem "pry"
 end
 
 group :test do
