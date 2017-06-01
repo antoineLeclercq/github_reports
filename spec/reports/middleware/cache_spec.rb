@@ -1,12 +1,12 @@
 require "faraday"
 require "time"
 require "reports/middleware/cache"
-require "reports/storage/memcached"
+require "reports/storage/redis"
 
 module Reports::Middleware
   RSpec.describe Cache do
     let(:stubs) { Faraday::Adapter::Test::Stubs.new }
-    let(:storage) { ::Reports::Storage::Memcached.new }
+    let(:storage) { ::Reports::Storage::RedisWrapper.new }
 
     let(:conn) do
       Faraday.new do |builder|
