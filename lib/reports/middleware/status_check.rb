@@ -3,7 +3,7 @@ module Reports
     class StatusCheck < Faraday::Middleware
       attr_reader :app
 
-      VALID_STATUS_CODES = [200, 302, 401, 403, 404, 422]
+      VALID_STATUS_CODES = [200, 302, 304, 401, 403, 404, 422]
 
       def call(env)
         app.call(env).on_complete do

@@ -1,24 +1,39 @@
+require 'time'
+
 module Reports
   module Middleware
     class Cache < Faraday::Middleware
       attr_reader :storage
 
-      def initialize(app)
+      def initialize(app, storage)
         super(app)
-        @storage = {}
+        @storage = storage
       end
 
       def call(env)
         url = env.url.to_s
-        cached_response = storage[url]
+        cached_response = storage.read(url)
 
-        if cached_response && !needs_revalidation?(cached_response) && fresh?(cached_response)
-          return cached_response
+        if cached_response
+          if !needs_revalidation?(cached_response) && fresh?(cached_response)
+            return cached_response
+          else
+            env.request_headers['If-None-Match'] = cached_response.headers['ETag']
+          end
         end
 
         response = @app.call(env)
         @app.call(env).on_complete do |env|
-          storage[url] = response if cachable_response?(env)
+          if cachable_response?(env)
+            if response.status == 304
+              cached_response.headers['Date'] = response.headers['Date']
+              storage.write(url, cached_response)
+
+              response.env.update(cached_response.env)
+            else
+              storage.write(url, response)
+            end
+          end
         end
 
         response

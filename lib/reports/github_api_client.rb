@@ -4,6 +4,7 @@ require_relative 'middleware/logging'
 require_relative 'middleware/status_check'
 require_relative 'middleware/json_parsing'
 require_relative 'middleware/cache'
+require_relative 'storage/memory'
 
 module Reports
   class Error < StandardError; end
@@ -45,11 +46,11 @@ module Reports
 
     def connection
       @connection ||= Faraday::Connection.new do |builder|
-        builder.use Middleware::Authentication
-        builder.use Middleware::StatusCheck
         builder.use Middleware::JSONParsing
+        builder.use Middleware::Cache, Storage::Memory.new
+        builder.use Middleware::StatusCheck
+        builder.use Middleware::Authentication
         builder.use Middleware::Logging
-        builder.use Middleware::Cache
         builder.adapter Faraday.default_adapter
       end
     end
