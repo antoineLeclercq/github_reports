@@ -13,7 +13,8 @@ module Reports
 
       def call(env)
         start_time = Time.now
-        app.call(env).on_complete do
+        response = app.call(env)
+        response.on_complete do
           duration = Time.now - start_time
           url = env.url.to_s
           method = env.method

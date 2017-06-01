@@ -3,7 +3,7 @@ require 'time'
 module Reports
   module Middleware
     class Cache < Faraday::Middleware
-      attr_reader :storage
+      attr_reader :storage, :app
 
       def initialize(app, storage)
         super(app)
@@ -22,8 +22,8 @@ module Reports
           end
         end
 
-        response = @app.call(env)
-        @app.call(env).on_complete do |env|
+        response = app.call(env)
+        response.on_complete do |env|
           if cachable_response?(env)
             if response.status == 304
               cached_response.headers['Date'] = response.headers['Date']

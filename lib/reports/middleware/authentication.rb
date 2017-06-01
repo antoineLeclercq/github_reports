@@ -10,7 +10,8 @@ module Reports
 
       def call(env)
         env.request_headers['Authorization'] = "token #{token}"
-        app.call(env).on_complete do
+        response = app.call(env)
+        response.on_complete do |env|
           if env.status == 401
             raise AuthenticationFailure, "Authentication failed, please set the Github authentication token to a valid Github access token"
           end

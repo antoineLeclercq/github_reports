@@ -17,8 +17,6 @@ module Reports
   Repository = Struct.new(:name, :url)
 
   class GitHubAPIClient
-    attr_reader :logger, :token
-
     def user_info(username)
       url = "https://api.github.com/users/#{username}"
 
@@ -48,9 +46,9 @@ module Reports
     def connection
       @connection ||= Faraday::Connection.new do |builder|
         builder.use Middleware::JSONParsing
-        builder.use Middleware::Cache, Storage::RedisWrapper.new
         builder.use Middleware::StatusCheck
         builder.use Middleware::Authentication
+        builder.use Middleware::Cache, Storage::RedisWrapper.new
         builder.use Middleware::Logging
         builder.adapter Faraday.default_adapter
       end
