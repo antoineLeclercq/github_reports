@@ -1,15 +1,16 @@
 require "faraday"
 require "time"
 require "reports/middleware/cache"
-require "reports/storage/memory"
+require "reports/storage/memcached"
 
 module Reports::Middleware
   RSpec.describe Cache do
     let(:stubs) { Faraday::Adapter::Test::Stubs.new }
+    let(:storage) { ::Reports::Storage::Memcached.new }
 
     let(:conn) do
       Faraday.new do |builder|
-        builder.use Cache, ::Reports::Storage::Memory.new
+        builder.use Cache, storage
         builder.adapter :test, stubs
       end
     end
@@ -18,6 +19,8 @@ module Reports::Middleware
       headers = {"Cache-Control" => "max-age=300", "Date" => Time.new.httpdate}
       [200, headers, "hello"]
     end
+
+    after { storage.flush }
 
     it "returns a previously cached response" do
       stubs.get("http://example.test") { [200, { 'Cache-Control' => 'public max-age=60', 'Date' => Time.now.httpdate }, "hello"] }

@@ -4,13 +4,14 @@ require_relative 'middleware/logging'
 require_relative 'middleware/status_check'
 require_relative 'middleware/json_parsing'
 require_relative 'middleware/cache'
-require_relative 'storage/memory'
+require_relative 'storage/memcached'
 
 module Reports
   class Error < StandardError; end
   class NonexistentUser < Error; end
   class RequestFailure < Error; end
   class AuthenticationFailure < Error; end
+  class ConfigurationError < Error; end
 
   User = Struct.new(:name, :location, :public_repos_count)
   Repository = Struct.new(:name, :url)
@@ -47,7 +48,7 @@ module Reports
     def connection
       @connection ||= Faraday::Connection.new do |builder|
         builder.use Middleware::JSONParsing
-        builder.use Middleware::Cache, Storage::Memory.new
+        builder.use Middleware::Cache, Storage::Memcached.new
         builder.use Middleware::StatusCheck
         builder.use Middleware::Authentication
         builder.use Middleware::Logging
