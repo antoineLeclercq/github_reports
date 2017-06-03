@@ -28,12 +28,6 @@ module Reports
       puts "name: #{user.name}"
       puts "location: #{user.location}"
       puts "public repos: #{user.public_repos_count}"
-
-      user = client.user_info(username)
-
-      puts "name: #{user.name}"
-      puts "location: #{user.location}"
-      puts "public repos: #{user.public_repos_count}"
     rescue Error => error
       puts "ERROR: #{error.message}"
     end
