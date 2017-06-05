@@ -14,12 +14,14 @@ module Reports
       def call(env)
         start_time = Time.now
         response = app.call(env)
-        response.on_complete do
+        response.on_complete do |response_env|
           duration = Time.now - start_time
           url = env.url.to_s
           method = env.method
-          status = env.status
-          logger.debug '-> %s %s %d (%.3f s)' % [url, method, status, duration]
+          status = response_env.status
+          cached = response_env.response_headers['X-Faraday-Cache-Status'] ? 'hit' : 'miss'
+
+          logger.debug '-> %s %s %d (%.3f s) %s' % [url, method, status, duration, cached]
         end
       end
     end

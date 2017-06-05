@@ -15,6 +15,7 @@ module Reports
 
   User = Struct.new(:name, :location, :public_repos_count)
   Repository = Struct.new(:name, :url)
+  ActivityEvent = Struct.new(:type, :repo_name)
 
   class GitHubAPIClient
     def user_info(username)
@@ -43,13 +44,26 @@ module Reports
       data.map { |repo| Repository.new(repo['full_name'], repo['html_url']) }
     end
 
+    def public_events_for_user(username)
+      url = "https://api.github.com/users/#{username}/events/public"
+
+      response = connection.get(url)
+
+      if response.status == 404
+        raise NonexistentUser, "'#{username}' does not exist"
+      end
+
+      data = response.body
+      data.map { |event| ActivityEvent.new(event['type'], event['repo']['name']) }
+    end
+
     def connection
       @connection ||= Faraday::Connection.new do |builder|
         builder.use Middleware::JSONParsing
         builder.use Middleware::StatusCheck
         builder.use Middleware::Authentication
-        builder.use Middleware::Cache, Storage::RedisWrapper.new
         builder.use Middleware::Logging
+        builder.use Middleware::Cache, Storage::RedisWrapper.new
         builder.adapter Faraday.default_adapter
       end
     end

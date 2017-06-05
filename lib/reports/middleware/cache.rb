@@ -16,6 +16,7 @@ module Reports
 
         if cached_response
           if !needs_revalidation?(cached_response) && fresh?(cached_response)
+            cached_response.headers['X-Faraday-Cache-Status'] = 'true'
             return cached_response
           else
             env.request_headers['If-None-Match'] = cached_response.headers['ETag']
