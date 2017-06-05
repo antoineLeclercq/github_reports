@@ -22,10 +22,7 @@ module Reports
       url = "https://api.github.com/users/#{username}"
 
       response = connection.get(url)
-
-      if response.status == 404
-        raise NonexistentUser, "'#{username}' does not exist"
-      end
+      raise NonexistentUser, "'#{username}' does not exist" if response.status == 404
 
       data = response.body
       User.new(data['name'], data['location'], data['public_repos'])
@@ -35,10 +32,7 @@ module Reports
       url = "https://api.github.com/users/#{username}/repos"
 
       response = connection.get(url)
-
-      if response.status == 404
-        raise NonexistentUser, "'#{username}' does not exist"
-      end
+      raise NonexistentUser, "'#{username}' does not exist" if response.status == 404
 
       data = response.body
       data.map { |repo| Repository.new(repo['full_name'], repo['html_url']) }
@@ -48,13 +42,21 @@ module Reports
       url = "https://api.github.com/users/#{username}/events/public"
 
       response = connection.get(url)
+      raise NonexistentUser, "'#{username}' does not exist" if response.status == 404
 
-      if response.status == 404
-        raise NonexistentUser, "'#{username}' does not exist"
+      events = response.body
+      link_header = response.headers['link']
+
+      if link_header
+        while match_data = link_header.match(/<(.*)>; rel="next"/)
+          next_page_url = match_data[1]
+          response = connection.get(next_page_url)
+          link_header = response.headers['link']
+          events += response.body
+        end
       end
 
-      data = response.body
-      data.map { |event| ActivityEvent.new(event['type'], event['repo']['name']) }
+      events.map { |event| ActivityEvent.new(event['type'], event['repo']['name']) }
     end
 
     def connection
