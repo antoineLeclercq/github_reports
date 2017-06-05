@@ -14,7 +14,7 @@ module Reports
   class ConfigurationError < Error; end
 
   User = Struct.new(:name, :location, :public_repos_count)
-  Repository = Struct.new(:name, :url)
+  Repository = Struct.new(:name, :url, :languages)
   ActivityEvent = Struct.new(:type, :repo_name)
 
   class GitHubAPIClient
@@ -34,8 +34,23 @@ module Reports
       response = connection.get(url)
       raise NonexistentUser, "'#{username}' does not exist" if response.status == 404
 
-      data = response.body
-      data.map { |repo| Repository.new(repo['full_name'], repo['html_url']) }
+      repositories = response.body
+      link_header = response.headers['link']
+
+      if link_header
+        while match_data = link_header.match(/<(.*)>; rel="next"/)
+          next_page_url = match_data[1]
+          response = connection.get(next_page_url)
+          link_header = response.headers['link']
+          repositories += response.body
+        end
+      end
+
+      repositories.map do |repo|
+        repo_name = repo['full_name']
+        repo_languages = connection.get("https://api.github.com/repos/#{repo_name}/languages").body
+        Repository.new(repo_name, repo['html_url'], repo_languages)
+      end
     end
 
     def public_events_for_user(username)
