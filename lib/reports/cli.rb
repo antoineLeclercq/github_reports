@@ -50,7 +50,7 @@ module Reports
 
       activity_events = client.public_events_for_user(username)
 
-      activity_events.each { |event| puts "#{event.type} - #{event.repo_name}" }
+      print_activity_report(activity_events)
     rescue Error => error
       puts "ERROR: #{error.message}"
     end
@@ -59,6 +59,22 @@ module Reports
 
     def client
       @client ||= Reports::GitHubAPIClient.new
+    end
+
+    def print_activity_report(events)
+      table_printer = TablePrinter.new(STDOUT)
+      event_types_map = events.each_with_object(Hash.new(0)) do |event, counts|
+        counts[event.type] += 1
+      end
+
+      table_printer.print(event_types_map, title: "Event Summary", total: true)
+      push_events = events.select { |event| event.type == "PushEvent" }
+      push_events_map = push_events.each_with_object(Hash.new(0)) do |event, counts|
+        counts[event.repo_name] += 1
+      end
+
+      puts # blank line
+      table_printer.print(push_events_map, title: "Project Push Summary", total: true)
     end
   end
 end
