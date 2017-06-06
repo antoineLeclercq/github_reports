@@ -7,8 +7,10 @@ module Reports
 
       def initialize(app)
         super(app)
+        level = ENV["LOG_LEVEL"]
         @logger = Logger.new(STDOUT)
         @logger.formatter = proc { |serverity, time, progname, msg| msg + "\n" }
+        @logger.level = Logger.const_get(level) if level
       end
 
       def call(env)

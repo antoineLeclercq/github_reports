@@ -67,6 +67,7 @@ module Reports
       url = 'https://api.github.com/gists'
       payload = JSON.dump({
         description: description,
+        public: false,
         files: {
           filename => {
             content: contents
