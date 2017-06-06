@@ -12,7 +12,8 @@ module Reports
       def call(env)
         response = app.call(env)
         response.on_complete do |env|
-          if env[:response_headers]['Content-Type'].include?('application/json')
+          content_type_header = env[:response_headers]['Content-Type']
+          if content_type_header && content_type_header.include?('application/json')
             parse_json(env)
           end
         end

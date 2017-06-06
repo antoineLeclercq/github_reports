@@ -7,12 +7,12 @@ module Reports
         super(app)
       end
 
-      VALID_STATUS_CODES = [200, 302, 304, 401, 403, 404, 422]
+      VALID_STATUS_CODES = [200, 201, 204, 302, 304, 401, 403, 404, 422]
 
       def call(env)
         response = app.call(env)
         response.on_complete do |env|
-          if !VALID_STATUS_CODES.include?(env.status)
+          unless VALID_STATUS_CODES.include?(env.status)
             raise RequestFailure, JSON.parse(env.body)['message']
           end
         end
